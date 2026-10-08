@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Note Details - Handwritten Notes</title>
+
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f6f8;
+
+            margin: 0;
+
+        }
+
+
+        header {
+
+            background: #222;
+
+            color: white;
+
+            text-align: center;
+
+            padding: 20px;
+
+        }
+
+
+        .container {
+
+            width: 90%;
+
+            max-width: 900px;
+
+            margin: 30px auto;
+
+        }
+
+
+        .note-info {
+
+            background: white;
+
+            padding: 25px;
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.1);
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .note-info h2 {
+
+            margin-top: 0;
+
+        }
+
+
+        .button {
+
+            display: inline-block;
+
+            background: #222;
+
+            color: white;
+
+            padding: 12px 20px;
+
+            text-decoration: none;
+
+            border-radius: 6px;
+
+            margin-top: 15px;
+
+            margin-right: 10px;
+
+        }
+
+
+        .button:hover {
+
+            background: #444;
+
+        }
+
+
+        .back-button {
+
+            display: inline-block;
+
+            margin-top: 20px;
+
+            color: #222;
+
+        }
+
+
+        #message {
+
+            text-align: center;
+
+            padding: 20px;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <header>
+
+        <h1>
+            📚 Handwritten Notes
+        </h1>
+
+    </header>
+
+
+
+    <div class="container">
+
+
+        <div id="message">
+
+            Loading note...
+
+        </div>
+
+
+
+        <div
+            class="note-info"
+            id="noteInfo"
+            style="display: none;"
+        >
+
+
+            <h2 id="title"></h2>
+
+
+            <p>
+
+                <strong>
+                    Subject:
+                </strong>
+
+                <span id="subject"></span>
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Topic:
+                </strong>
+
+                <span id="topic"></span>
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Description:
+                </strong>
+
+                <span id="description"></span>
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Views:
+                </strong>
+
+                <span id="views"></span>
+
+            </p>
+
+
+
+            <!-- READ NOTE -->
+
+            <a
+                id="readButton"
+                class="button"
+                target="_blank"
+            >
+
+                📖 Read Note
+
+            </a>
+
+
+
+            <!-- DOWNLOAD NOTE -->
+
+            <a
+                id="downloadButton"
+                class="button"
+                download
+            >
+
+                ⬇️ Download Note
+
+            </a>
+
+
+            <br>
+
+
+            <a
+                href="index.html"
+                class="back-button"
+            >
+
+                ← Back to Notes
+
+            </a>
+
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+
+        // =====================================
+        // GET NOTE ID
+        // =====================================
+
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const noteId =
+            urlParams.get("id");
+
+
+
+        // =====================================
+        // CHECK NOTE ID
+        // =====================================
+
+        if (!noteId) {
+
+
+            document.getElementById(
+                "message"
+            ).innerHTML =
+                "❌ Note ID not found.";
+
+
+        }
+
+
+        else {
+
+
+            // =====================================
+            // GET ALL NOTES
+            // =====================================
+
+            fetch(
+                "http://127.0.0.1:8000/notes"
+            )
+
+
+            .then(
+                response =>
+                    response.json()
+            )
+
+
+            .then(
+                notes => {
+
+
+                    // Find selected note
+
+                    const note =
+                        notes.find(
+                            n =>
+                                n.id == noteId
+                        );
+
+
+
+                    // =====================================
+                    // NOTE NOT FOUND
+                    // =====================================
+
+                    if (!note) {
+
+
+                        document.getElementById(
+                            "message"
+                        ).innerHTML =
+                            "❌ Note not found.";
+
+
+                        return;
+
+                    }
+
+
+
+                    // =====================================
+                    // SHOW NOTE INFORMATION
+                    // =====================================
+
+                    document.getElementById(
+                        "message"
+                    ).style.display =
+                        "none";
+
+
+                    document.getElementById(
+                        "noteInfo"
+                    ).style.display =
+                        "block";
+
+
+
+                    document.getElementById(
+                        "title"
+                    ).innerText =
+                        note.title;
+
+
+                    document.getElementById(
+                        "subject"
+                    ).innerText =
+                        note.subject;
+
+
+                    document.getElementById(
+                        "topic"
+                    ).innerText =
+                        note.topic ||
+                        "Not specified";
+
+
+                    document.getElementById(
+                        "description"
+                    ).innerText =
+                        note.description ||
+                        "No description";
+
+
+                    document.getElementById(
+                        "views"
+                    ).innerText =
+                        note.views;
+
+
+
+                    // =====================================
+                    // READ BUTTON
+                    // =====================================
+
+                    const fileUrl =
+                        "http://127.0.0.1:8000/view-note/"
+                        + note.id;
+
+
+                    document.getElementById(
+                        "readButton"
+                    ).href =
+                        fileUrl;
+
+
+
+                    // =====================================
+                    // DOWNLOAD BUTTON
+                    // =====================================
+
+                    document.getElementById(
+                        "downloadButton"
+                    ).href =
+                        fileUrl;
+
+                }
+            )
+
+
+            .catch(
+                error => {
+
+
+                    console.error(error);
+
+
+                    document.getElementById(
+                        "message"
+                    ).innerHTML =
+                        "❌ Unable to load note.";
+
+                }
+            );
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>

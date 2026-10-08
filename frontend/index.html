@@ -1,0 +1,660 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Handwritten Notes</title>
+
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f6f8;
+
+            margin: 0;
+
+        }
+
+
+        header {
+
+            background: #222;
+
+            color: white;
+
+            padding: 20px;
+
+        }
+
+
+        header h1 {
+
+            margin: 0;
+
+            text-align: center;
+
+        }
+
+
+        .top-bar {
+
+            max-width: 1000px;
+
+            margin: 15px auto 0;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+
+        .user-name {
+
+            font-size: 16px;
+
+        }
+
+
+        .logout-button {
+
+            background: #d9534f;
+
+            color: white;
+
+            border: none;
+
+            padding: 8px 14px;
+
+            border-radius: 6px;
+
+            cursor: pointer;
+
+        }
+
+
+        .logout-button:hover {
+
+            background: #c9302c;
+
+        }
+
+
+        .container {
+
+            width: 90%;
+
+            max-width: 1000px;
+
+            margin: 30px auto;
+
+        }
+
+
+        .actions {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .upload-button {
+
+            background: #222;
+
+            color: white;
+
+            padding: 11px 18px;
+
+            text-decoration: none;
+
+            border-radius: 6px;
+
+        }
+
+
+        .upload-button:hover {
+
+            background: #444;
+
+        }
+
+
+        .search-box {
+
+            width: 100%;
+
+            padding: 13px;
+
+            box-sizing: border-box;
+
+            border: 1px solid #ccc;
+
+            border-radius: 6px;
+
+            margin-bottom: 20px;
+
+            font-size: 16px;
+
+        }
+
+
+        .note-card {
+
+            background: white;
+
+            padding: 20px;
+
+            margin: 20px 0;
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.1);
+
+        }
+
+
+        .note-card h2 {
+
+            margin-top: 0;
+
+        }
+
+
+        .read-button {
+
+            display: inline-block;
+
+            background: #222;
+
+            color: white;
+
+            padding: 10px 18px;
+
+            text-decoration: none;
+
+            border-radius: 6px;
+
+            margin-top: 10px;
+
+        }
+
+
+        .read-button:hover {
+
+            background: #444;
+
+        }
+
+
+        .no-notes {
+
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            text-align: center;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================
+         HEADER
+    ====================================== -->
+
+
+    <header>
+
+
+        <h1>
+            📚 Handwritten Notes
+        </h1>
+
+
+        <div class="top-bar">
+
+
+            <div
+                class="user-name"
+                id="userName"
+            >
+
+                👤 Welcome User
+
+            </div>
+
+
+            <button
+                class="logout-button"
+                onclick="logout()"
+            >
+
+                Logout
+
+            </button>
+
+
+        </div>
+
+
+    </header>
+
+
+
+    <!-- =====================================
+         MAIN CONTENT
+    ====================================== -->
+
+
+    <div class="container">
+
+
+        <!-- =====================================
+             ACTION BUTTONS
+        ====================================== -->
+
+
+        <div class="actions">
+
+
+            <a
+                class="upload-button"
+                href="upload.html"
+            >
+
+                📤 Upload Note
+
+            </a>
+
+
+            <a
+                class="upload-button"
+                href="my-notes.html"
+            >
+
+                📚 My Notes
+
+            </a>
+
+
+        </div>
+
+
+
+        <h2>
+
+            Available Notes
+
+        </h2>
+
+
+
+        <!-- =====================================
+             SEARCH BOX
+        ====================================== -->
+
+
+        <input
+            type="text"
+            id="searchBox"
+            class="search-box"
+            placeholder="🔍 Search notes by title, subject or topic..."
+        >
+
+
+
+        <!-- =====================================
+             NOTES CONTAINER
+        ====================================== -->
+
+
+        <div id="notes-container">
+
+            Loading notes...
+
+        </div>
+
+
+    </div>
+
+
+
+    <script>
+
+
+        // =====================================
+        // STORE ALL NOTES
+        // =====================================
+
+
+        let allNotes = [];
+
+
+
+        // =====================================
+        // LOAD NOTES FROM BACKEND
+        // =====================================
+
+
+        fetch(
+            "http://127.0.0.1:8000/notes"
+        )
+
+
+        .then(
+            response =>
+                response.json()
+        )
+
+
+        .then(
+            notes => {
+
+
+                allNotes = notes;
+
+
+                displayNotes(
+                    allNotes
+                );
+
+            }
+        )
+
+
+        .catch(
+            error => {
+
+
+                console.error(error);
+
+
+                document.getElementById(
+                    "notes-container"
+                ).innerHTML =
+                    "❌ Unable to load notes.";
+
+            }
+        );
+
+
+
+        // =====================================
+        // DISPLAY NOTES
+        // =====================================
+
+
+        function displayNotes(
+            notes
+        ) {
+
+
+            const container =
+                document.getElementById(
+                    "notes-container"
+                );
+
+
+            container.innerHTML = "";
+
+
+
+            // =====================================
+            // NO NOTES
+            // =====================================
+
+
+            if (
+                notes.length === 0
+            ) {
+
+
+                container.innerHTML = `
+
+                    <div class="no-notes">
+
+                        No notes found.
+
+                    </div>
+
+                `;
+
+
+                return;
+
+            }
+
+
+
+            // =====================================
+            // DISPLAY EVERY NOTE
+            // =====================================
+
+
+            notes.forEach(
+                note => {
+
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "note-card";
+
+
+                    card.innerHTML = `
+
+                        <h2>
+
+                            ${note.title}
+
+                        </h2>
+
+
+                        <p>
+
+                            <strong>
+                                Subject:
+                            </strong>
+
+                            ${note.subject}
+
+                        </p>
+
+
+                        <p>
+
+                            <strong>
+                                Topic:
+                            </strong>
+
+                            ${
+                                note.topic ||
+                                "Not specified"
+                            }
+
+                        </p>
+
+
+                        <p>
+
+                            ${
+                                note.description ||
+                                ""
+                            }
+
+                        </p>
+
+
+                        <p>
+
+                            <strong>
+                                Views:
+                            </strong>
+
+                            ${note.views}
+
+                        </p>
+
+
+                        <a
+                            class="read-button"
+                            href="note.html?id=${note.id}"
+                        >
+
+                            📖 Read Note
+
+                        </a>
+
+                    `;
+
+
+                    container.appendChild(
+                        card
+                    );
+
+                }
+            );
+
+        }
+
+
+
+        // =====================================
+        // SEARCH NOTES
+        // =====================================
+
+
+        document
+            .getElementById(
+                "searchBox"
+            )
+            .addEventListener(
+                "input",
+                function() {
+
+
+                    const searchText =
+                        this.value.toLowerCase();
+
+
+
+                    const filteredNotes =
+                        allNotes.filter(
+                            note => {
+
+
+                                const title =
+                                    note.title
+                                    .toLowerCase();
+
+
+                                const subject =
+                                    note.subject
+                                    .toLowerCase();
+
+
+                                const topic =
+                                    (
+                                        note.topic ||
+                                        ""
+                                    )
+                                    .toLowerCase();
+
+
+
+                                return (
+
+                                    title.includes(
+                                        searchText
+                                    )
+
+                                    ||
+
+                                    subject.includes(
+                                        searchText
+                                    )
+
+                                    ||
+
+                                    topic.includes(
+                                        searchText
+                                    )
+
+                                );
+
+                            }
+                        );
+
+
+
+                    displayNotes(
+                        filteredNotes
+                    );
+
+                }
+            );
+
+
+
+        // =====================================
+        // LOGOUT
+        // =====================================
+
+
+        function logout() {
+
+
+            localStorage.removeItem(
+                "user_id"
+            );
+
+
+            localStorage.removeItem(
+                "user_name"
+            );
+
+
+            window.location.href =
+                "login.html";
+
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>
+```
